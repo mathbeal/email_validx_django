@@ -1,4 +1,4 @@
-# Description
+Description
 -------------
 
 Validx library defines new types like Str, Int, Dict. It helps validate a schema in a pleasant way.
@@ -6,7 +6,7 @@ Validx library defines new types like Str, Int, Dict. It helps validate a schema
 The Email type is not defined. As I needed it with django, I subclass Str to create an Email schema.
 
 
-# Usage
+Usage
 -------
 
 ```python
@@ -17,7 +17,7 @@ schema = Dict({
 
 json_response = {
     'name': 'Toto',
-    'email': toto@gmail.com',
+    'email': 'toto@gmail.com',
 }
 
 schema(json_response)
