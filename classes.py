@@ -1,33 +1,33 @@
-from warnings import warn
+from typing import Any, Dict, Optional
 
-from django.core.exceptions import ValidationError
-from django.core.validators import EmailValidator as DjangoEmailValidator
+from django.core.exceptions import ValidationError  # type: ignore
+from django.core.validators import EmailValidator as DjangoEmailValidator  # type: ignore
 from validx import Str, exc
 
 
-class Email:
+class Email(Str):
 
-    @staticmethod
-    def schema(alias=None, replace=None, **kw):
+    def __init__(self, alias=None, replace=None,
+                 validator=DjangoEmailValidator, **kw):
+        """Email schema validation using EmailValidator from Django
 
-        kw_copy = dict(kw)
+        validator check that email has a valid format
+        kw['pattern'] is secondary pattern email validation (ex: @compagny)
+        """
+        super(Email, self).__init__(alias=alias, replace=replace, **kw)
+        self._validator = validator
 
-        if kw_copy.get('pattern', None) is not None:
-            warn(
-                f"pattern is ignored, use Str(pattern={kw['pattern']}, ...) instead"
-            )
-            del kw_copy['pattern']
+    def __call__(self, value: Any) -> Any:
+        """subclass __call__ to add validator checking.
+        """
+        value = super(Email, self).__call__(value)
 
-        class EmailStr(Str):
-
-            def __call__(self, value):
-                value = super(EmailStr, self).__call__(value)
-
-                try:
-                    DjangoEmailValidator()(value)
-                except ValidationError:
-                    raise exc.PatternMatchError(expected='valid email',
-                                                actual=value)
-                return value
-
-        return EmailStr(alias=alias, replace=replace, **kw_copy)
+        if self._validator:
+            try:
+                self._validator()(value)
+            except ValidationError:
+                raise exc.PatternMatchError(
+                    expected='valid email',
+                    actual=value,
+                )
+        return value

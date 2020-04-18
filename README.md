@@ -12,13 +12,19 @@ Usage
 ```python
 schema = Dict({
     'name': Str(),
-    'email': Email.schema(),
+    'email': Email(),
 })
 
-json_response = {
+valid_json = {
     'name': 'Toto',
     'email': 'toto@gmail.com',
 }
 
-schema(json_response)
+invalid_json = {
+    'name': 'Toto',
+    'email': 'toto@@gmail.com',
+}
+
+schema(valid_json)  # json is valid, no exception raised.
+schema(invalid_json)  # raise validx.exc.errors.PatternMatchError.
 ```
