@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.core.exceptions import ValidationError  # type: ignore
 from django.core.validators import EmailValidator as DjangoEmailValidator  # type: ignore
@@ -7,27 +7,26 @@ from validx import Str, exc
 
 class Email(Str):
 
-    def __init__(self, alias=None, replace=None,
-                 validator=DjangoEmailValidator, **kw):
-        """Email schema validation using EmailValidator from Django
+    def __init__(self, *args, email_validator=DjangoEmailValidator, **kwargs):
+        super(Email, self).__init__(*args, **kwargs)
 
-        validator check that email has a valid format
-        kw['pattern'] is secondary pattern email validation (ex: @compagny)
-        """
-        super(Email, self).__init__(alias=alias, replace=replace, **kw)
-        self._validator = validator
+        self.email_validator = email_validator
 
-    def __call__(self, value: Any) -> Any:
+    def __call__(self, value: Any, __context=None) -> Any:
         """subclass __call__ to add validator checking.
         """
-        value = super(Email, self).__call__(value)
+        value = super(Email, self).__call__(
+            value,
+            __context=__context,
+        )
 
-        if self._validator:
+        if self.email_validator:
             try:
-                self._validator()(value)
+                self.email_validator()(value)
             except ValidationError:
                 raise exc.PatternMatchError(
                     expected='valid email',
                     actual=value,
                 )
+
         return value
